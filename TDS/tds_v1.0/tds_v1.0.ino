@@ -176,12 +176,12 @@ void setup() {
     }
 
     temperatureSetup();
-    /*
+
     // Start the MicroModem.
     Serial2.begin(MM_BAUD);
     setCallSign(callsign);
     sendMessage(callsign + " signing on.");
-    */
+    cycleNum = 0;
     Serial.println("TDS is Online");
 }
 
@@ -199,16 +199,14 @@ void loop()
     logData(barometer_data);
     logData(gps_data);
 
-    /*
-    if (cycleNum >= 3)
+    if (cycleNum >= 5)
     {
         cycleNum = 0;
 
-        sendMessage(accelerometer_data);
-        sendMessage(barometer_data);
+        //sendMessage(accelerometer_data);
+        //sendMessage(barometer_data);
         sendMessage(gps_data);
     }
-    */
 
     // call sensors.requestTemperatures() to issue a global temperature
     // request to all devices on the bus
@@ -386,10 +384,10 @@ String getGPSDateTime()
 
 static void smartdelay(unsigned long ms)
 {
+    Serial.println("Delay: " + ms);
     unsigned long start = millis();
     do
     {
-        while (Serial1.available())
         gps.encode(Serial1.read());
     } while (millis() - start < ms);
 }
