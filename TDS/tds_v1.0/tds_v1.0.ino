@@ -42,12 +42,13 @@
 
 #define BASE_NAME "ORDATA" // File Name @TODO: make this dynamic (time from data logger perhaps).
 #define EXTENSION ".txt"
+//EDIT THIS WITH ACCURATE DATA - in millibars
 #define SEA_LEVEL_PRESSURE 1019.64f // For Brothers 5/28
 #define TICKS_PER_G 12.0f // The difference in analog value for 1g
 #define ZERO_G_OFFSET 330.0f // The analog value corresponding to 0g
 #define Z_AXIS_OFFSET 6.0f // The Z axis is 6 higher than the X or Y axis
 #define ONE_SECOND 1000 // How many milliseconds per second
-#define DELAY 200 // How long we wait between cycles (transmissions and data collection)
+#define DELAY 500 // How long we wait between cycles (transmissions and data collection)
 
 // GPS uses Serial1
 #define GPS_BAUD 57600
@@ -56,7 +57,6 @@
 #define ACCEL_X A2
 #define ACCEL_Y A1
 #define ACCEL_Z A0
-
 
 // Nosecone Temperature Sensor (DS18B20)
 #define TEMP_DQ_BUS 11
@@ -182,12 +182,17 @@ void setup() {
     setCallSign(callsign);
     sendMessage(callsign + " signing on.");
     cycleNum = 0;
+    while (Serial2.available()) {
+        char c = (char)Serial2.read();
+        Serial.write(c);
+    }
     Serial.println("TDS is Online");
 }
 
 void loop()
 {
-    cycleNum ++;
+
+    cycleNum++;
 
     unsigned long milli = millis();
 
@@ -199,13 +204,13 @@ void loop()
     logData(barometer_data);
     logData(gps_data);
 
-    if (cycleNum >= 5)
+    if (cycleNum >= (5000/DELAY))
     {
-        cycleNum = 0;
-
+        Serial.println("Sending data");
+        sendMessage(gps_data);
         //sendMessage(accelerometer_data);
         //sendMessage(barometer_data);
-        sendMessage(gps_data);
+        cycleNum = 0;
     }
 
     // call sensors.requestTemperatures() to issue a global temperature
@@ -228,7 +233,7 @@ void loop()
 ////////////////////////////////////////////////////////////////////////////////
 void logData(String packet)
 {
-    String time_string = (String) (millis()/ONE_SECOND) + "s: ";
+    String time_string = (String) (millis()) + "ms: ";
     packet = time_string + packet;
     Serial.println(packet);
 
